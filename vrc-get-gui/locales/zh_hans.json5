@@ -180,6 +180,8 @@
     "projects:do not close": "请不要关闭窗口",
     "projects:toast:close unity before migration": "请在迁移前关闭 Unity。",
     "projects:toast:project migrated": "项目已成功迁移。",
+    "projects:toast:thumbnail updated": "Project thumbnail was updated.",
+    "projects:toast:invalid thumbnail": "Please select a supported image file.",
 
     "projects:dialog:backup header": "备份项目",
     "projects:dialog:creating backup...": "正在创建备份...",
@@ -197,6 +199,8 @@
     "projects:manage:tooltip:back to projects": "返回项目列表",
     "projects:menuitem:change launch options": "更改启动选项",
     "projects:menuitem:copy project": "复制项目",
+    "projects:menuitem:set thumbnail": "Set Thumbnail",
+    "projects:menuitem:remove thumbnail": "Remove Thumbnail",
     "projects:menuitem:backup": "生成备份",
     "projects:menuitem:forget unity path": "清除 Unity 版本设置",
     "projects:manage:project location": "位于: <path>{{path}}</path>",

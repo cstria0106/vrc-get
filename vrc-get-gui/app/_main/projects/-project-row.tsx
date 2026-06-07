@@ -6,6 +6,10 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { CircleHelp, CircleUserRound, Ellipsis, Globe } from "lucide-react";
 import React, { type ComponentProps, useContext } from "react";
+import {
+	ProjectThumbnail,
+	useProjectThumbnailMutation,
+} from "@/app/_main/projects/-project-thumbnail";
 import { copyProject } from "@/app/_main/projects/manage/-copy-project";
 import { MigrationCopyingDialog } from "@/app/_main/projects/manage/-unity-migration";
 import { BackupProjectDialog } from "@/components/BackupProjectDialog";
@@ -94,6 +98,7 @@ export function ProjectRow({
 	};
 
 	const setProjectFavorite = useSetProjectFavoriteMutation();
+	const projectThumbnailMutation = useProjectThumbnailMutation();
 
 	const removed = !project.is_exists;
 	const is_valid = project.is_valid;
@@ -118,6 +123,9 @@ export function ProjectRow({
 							}
 						/>
 					</div>
+				</td>
+				<td className={`${cellClass} w-14 min-w-14`}>
+					<ProjectThumbnail project={project} className="size-10 min-w-10" />
 				</td>
 				<td className={`${cellClass} max-w-64 overflow-hidden`}>
 					<Tooltip>
@@ -236,6 +244,33 @@ export function ProjectRow({
 									disabled={removed || !(is_valid ?? true)}
 								>
 									{tc("projects:menuitem:copy project")}
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() =>
+										projectThumbnailMutation.mutate({
+											projectPath: project.path,
+											action: "set",
+										})
+									}
+									disabled={removed || loading || !(is_valid ?? true)}
+								>
+									{tc("projects:menuitem:set thumbnail")}
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() =>
+										projectThumbnailMutation.mutate({
+											projectPath: project.path,
+											action: "remove",
+										})
+									}
+									disabled={
+										removed ||
+										loading ||
+										!(is_valid ?? true) ||
+										project.thumbnail_path == null
+									}
+								>
+									{tc("projects:menuitem:remove thumbnail")}
 								</DropdownMenuItem>
 								<DropdownMenuItem
 									onClick={() =>

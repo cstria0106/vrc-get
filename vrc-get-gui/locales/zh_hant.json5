@@ -186,6 +186,8 @@
     "projects:do not close": "請勿關閉視窗。",
     "projects:toast:close unity before migration": "遷移前必須關閉 Unity。",
     "projects:toast:project migrated": "專案遷移成功。",
+    "projects:toast:thumbnail updated": "Project thumbnail was updated.",
+    "projects:toast:invalid thumbnail": "Please select a supported image file.",
 
     "projects:dialog:backup header": "備份專案",
     "projects:dialog:creating backup...": "創建備份中...",
@@ -203,6 +205,8 @@
     "projects:manage:tooltip:back to projects": "回到專案頁面",
     "projects:menuitem:change launch options": "變更啟動選項",
     "projects:menuitem:copy project": "複製專案",
+    "projects:menuitem:set thumbnail": "Set Thumbnail",
+    "projects:menuitem:remove thumbnail": "Remove Thumbnail",
     "projects:menuitem:backup": "進行備份",
     "projects:menuitem:forget unity path": "清除 Unity 版本設定",
     "projects:manage:project location": "位於：<path>{{path}}</path>",

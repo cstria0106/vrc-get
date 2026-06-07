@@ -180,6 +180,8 @@
     "projects:do not close": "ウィンドウを閉じないでください。",
     "projects:toast:close unity before migration": "プロジェクト移行を始める前に、Unityを閉じてください。",
     "projects:toast:project migrated": "プロジェクト移行に成功しました。",
+    "projects:toast:thumbnail updated": "Project thumbnail was updated.",
+    "projects:toast:invalid thumbnail": "Please select a supported image file.",
 
     "projects:dialog:backup header": "バックアップを作成",
     "projects:dialog:creating backup...": "バックアップを作成中...",
@@ -197,6 +199,8 @@
     "projects:manage:tooltip:back to projects": "プロジェクトリストに戻る",
     "projects:menuitem:change launch options": "起動オプションを変更",
     "projects:menuitem:copy project": "プロジェクトを複製する",
+    "projects:menuitem:set thumbnail": "Set Thumbnail",
+    "projects:menuitem:remove thumbnail": "Remove Thumbnail",
     "projects:menuitem:backup": "バックアップを行う",
     "projects:menuitem:forget unity path": "どのUnityでプロジェクトを開くか<br>保存した選択をリセットする",
     "projects:manage:project location": "保存場所: <path>{{path}}</path>",

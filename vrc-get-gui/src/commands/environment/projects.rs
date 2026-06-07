@@ -7,6 +7,7 @@ use crate::templates::{CreateProjectErr, ProjectTemplateInfo};
 use crate::utils::{
     FileSystemTree, collect_notable_project_files_tree, default_project_path, trash_delete,
 };
+use base64::Engine as _;
 use futures::future::{join_all, try_join_all};
 use futures::prelude::*;
 use itertools::Itertools;
@@ -40,6 +41,8 @@ pub struct TauriProject {
     favorite: bool,
     is_exists: bool,
     is_valid: Option<bool>,
+    thumbnail_path: Option<String>,
+    thumbnail_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, specta::Type)]
@@ -88,6 +91,7 @@ impl TauriProject {
         let is_exists = std::fs::metadata(project.path().unwrap())
             .map(|x| x.is_dir())
             .unwrap_or(false);
+        let thumbnail = find_project_thumbnail(Path::new(project.path().unwrap()));
         Self {
             name: project.name().unwrap().to_string(),
             path: project.path().unwrap().to_string(),
@@ -108,8 +112,63 @@ impl TauriProject {
             favorite: project.favorite(),
             is_exists,
             is_valid: project.is_valid_project(),
+            thumbnail_path: thumbnail.as_ref().map(|thumbnail| thumbnail.path.clone()),
+            thumbnail_url: thumbnail.map(|thumbnail| thumbnail.url),
         }
     }
+}
+
+const PROJECT_THUMBNAIL_DIR: &str = "ALCOM~";
+const PROJECT_THUMBNAIL_STEM: &str = "thumbnail";
+const PROJECT_THUMBNAIL_EXTENSIONS: &[&str] = &["png", "jpg", "jpeg", "webp", "gif"];
+
+struct ProjectThumbnail {
+    path: String,
+    url: String,
+}
+
+fn project_thumbnail_dir(project_path: &Path) -> PathBuf {
+    project_path.join("Assets").join(PROJECT_THUMBNAIL_DIR)
+}
+
+fn find_project_thumbnail(project_path: &Path) -> Option<ProjectThumbnail> {
+    let thumbnail_dir = project_thumbnail_dir(project_path);
+
+    let path = PROJECT_THUMBNAIL_EXTENSIONS
+        .iter()
+        .map(|extension| thumbnail_dir.join(format!("{PROJECT_THUMBNAIL_STEM}.{extension}")))
+        .find(|path| path.is_file())?;
+
+    let extension = path.extension()?.to_str()?.to_ascii_lowercase();
+    let mime = match extension.as_str() {
+        "png" => "image/png",
+        "jpg" | "jpeg" => "image/jpeg",
+        "webp" => "image/webp",
+        "gif" => "image/gif",
+        _ => return None,
+    };
+    let image = std::fs::read(&path).ok()?;
+    let image = base64::engine::general_purpose::STANDARD.encode(image);
+
+    Some(ProjectThumbnail {
+        path: path.to_string_lossy().into_owned(),
+        url: format!("data:{mime};base64,{image}"),
+    })
+}
+
+async fn remove_project_thumbnail_files(project_path: &Path) -> Result<(), RustError> {
+    let thumbnail_dir = project_thumbnail_dir(project_path);
+
+    for extension in PROJECT_THUMBNAIL_EXTENSIONS {
+        let path = thumbnail_dir.join(format!("{PROJECT_THUMBNAIL_STEM}.{extension}"));
+        match tokio::fs::remove_file(&path).await {
+            Ok(()) => {}
+            Err(e) if e.kind() == io::ErrorKind::NotFound => {}
+            Err(e) => return Err(e.into()),
+        }
+    }
+
+    Ok(())
 }
 
 impl TauriUpdatedRealProjectInfo {
@@ -563,6 +622,71 @@ pub async fn environment_set_favorite_project(
     project.set_favorite(favorite);
     connection.update_project(&project);
     connection.save(io.inner()).await?;
+    Ok(())
+}
+
+#[derive(Serialize, specta::Type)]
+pub enum TauriSetProjectThumbnailResult {
+    NoFileSelected,
+    InvalidSelection,
+    Successful { thumbnail_path: String },
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn environment_set_project_thumbnail(
+    window: Window,
+    io: State<'_, DefaultEnvironmentIo>,
+    project_path: String,
+) -> Result<TauriSetProjectThumbnailResult, RustError> {
+    let Some(source_path) = window
+        .dialog()
+        .file()
+        .set_parent(&window)
+        .add_filter("Image", &["png", "jpg", "jpeg", "webp", "gif"])
+        .blocking_pick_file()
+        .map(|x| x.into_path_buf())
+        .transpose()?
+    else {
+        return Ok(TauriSetProjectThumbnailResult::NoFileSelected);
+    };
+
+    let extension = match source_path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .map(str::to_ascii_lowercase)
+    {
+        Some(extension) if PROJECT_THUMBNAIL_EXTENSIONS.contains(&extension.as_str()) => extension,
+        _ => return Ok(TauriSetProjectThumbnailResult::InvalidSelection),
+    };
+
+    let project_path = PathBuf::from(project_path);
+    if !project_path.join("Assets").is_dir() {
+        return Ok(TauriSetProjectThumbnailResult::InvalidSelection);
+    }
+
+    let thumbnail_dir = project_thumbnail_dir(&project_path);
+    super::super::create_dir_all_with_err(&thumbnail_dir).await?;
+    remove_project_thumbnail_files(&project_path).await?;
+
+    let thumbnail_path = thumbnail_dir.join(format!("{PROJECT_THUMBNAIL_STEM}.{extension}"));
+    tokio::fs::copy(source_path, &thumbnail_path).await?;
+    update_project_last_modified(io.inner(), &project_path).await;
+
+    Ok(TauriSetProjectThumbnailResult::Successful {
+        thumbnail_path: thumbnail_path.to_string_lossy().into_owned(),
+    })
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn environment_remove_project_thumbnail(
+    io: State<'_, DefaultEnvironmentIo>,
+    project_path: String,
+) -> Result<(), RustError> {
+    let project_path = PathBuf::from(project_path);
+    remove_project_thumbnail_files(&project_path).await?;
+    update_project_last_modified(io.inner(), &project_path).await;
     Ok(())
 }
 

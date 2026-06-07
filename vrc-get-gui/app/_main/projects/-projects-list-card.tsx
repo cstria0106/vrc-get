@@ -122,6 +122,7 @@ export function ProjectsTableCard({
 					<th className={`${thClass} bg-secondary text-secondary-foreground`}>
 						<Star className={"size-4"} />
 					</th>
+					<th className={`${thClass} bg-secondary text-secondary-foreground`} />
 					<th className={`${thClass} ${headerBg("name")}`}>
 						<button
 							type="button"

@@ -186,6 +186,8 @@
     "projects:do not close": "Do not close the window.",
     "projects:toast:close unity before migration": "Unity must be closed before migration.",
     "projects:toast:project migrated": "Project was migrated successfully.",
+    "projects:toast:thumbnail updated": "Project thumbnail was updated.",
+    "projects:toast:invalid thumbnail": "Please select a supported image file.",
 
     "projects:dialog:backup header": "Backup Project",
     "projects:dialog:creating backup...": "Creating a backup...",
@@ -203,6 +205,8 @@
     "projects:manage:tooltip:back to projects": "Back to projects",
     "projects:menuitem:change launch options": "Change Launch Options",
     "projects:menuitem:copy project": "Copy Project",
+    "projects:menuitem:set thumbnail": "Set Thumbnail",
+    "projects:menuitem:remove thumbnail": "Remove Thumbnail",
     "projects:menuitem:backup": "Make Backup",
     "projects:menuitem:forget unity path": "Forget Unity for this Project",
     "projects:manage:project location": "Located at: <path>{{path}}</path>",

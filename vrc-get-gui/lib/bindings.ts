@@ -29,6 +29,8 @@ export const commands = {
 	environmentCopyProjectForMigration: (channel: string, sourcePath: string) => __TAURI_INVOKE<AsyncCallResult<TauriCopyProjectProgress, string>>("environment_copy_project_for_migration", { channel, sourcePath }),
 	environmentCopyProject: (channel: string, sourcePath: string, newPath: string) => __TAURI_INVOKE<AsyncCallResult<TauriCopyProjectProgress, string>>("environment_copy_project", { channel, sourcePath, newPath }),
 	environmentSetFavoriteProject: (projectPath: string, favorite: boolean) => __TAURI_INVOKE<null>("environment_set_favorite_project", { projectPath, favorite }),
+	environmentSetProjectThumbnail: (projectPath: string) => __TAURI_INVOKE<TauriSetProjectThumbnailResult>("environment_set_project_thumbnail", { projectPath }),
+	environmentRemoveProjectThumbnail: (projectPath: string) => __TAURI_INVOKE<null>("environment_remove_project_thumbnail", { projectPath }),
 	environmentProjectCreationInformation: () => __TAURI_INVOKE<TauriProjectCreationInformation>("environment_project_creation_information"),
 	environmentCheckProjectName: (basePath: string, projectName: string) => __TAURI_INVOKE<TauriProjectDirCheckResult>("environment_check_project_name", { basePath, projectName }),
 	environmentCreateProject: (basePath: string, projectName: string, templateId: string, templateVersion: number, unityVersion: string) => __TAURI_INVOKE<TauriCreateProjectResult>("environment_create_project", { basePath, projectName, templateId, templateVersion, unityVersion }),
@@ -332,6 +334,8 @@ export type TauriProject = {
 	favorite: boolean,
 	is_exists: boolean,
 	is_valid: boolean | null,
+	thumbnail_path: string | null,
+	thumbnail_url: string | null,
 };
 
 export type TauriProjectCreationInformation = {
@@ -385,6 +389,8 @@ export type TauriRepositoryDescriptor = {
 	url: string,
 	headers: { [key in string]: string },
 };
+
+export type TauriSetProjectThumbnailResult = "NoFileSelected" | "InvalidSelection" | { type: "Successful"; thumbnail_path: string };
 
 export type TauriUnityVersions = {
 	unity_paths: ([string, string, boolean])[],
@@ -461,4 +467,3 @@ export type UpdaterStatus =
  *  `VRC_GET_GUI_UPDATER_UPDATE_SUGGESTION_MESSAGE` environment variable at build time.
  */
 "UpdaterDisabled";
-

@@ -180,6 +180,8 @@
     "projects:do not close": "창을 닫지 말아주세요.",
     "projects:toast:close unity before migration": "프로젝트를 변환하기 전에 Unity를 종료해주세요.",
     "projects:toast:project migrated": "프로젝트를 성공적으로 변환했습니다.",
+    "projects:toast:thumbnail updated": "프로젝트 썸네일을 갱신했습니다.",
+    "projects:toast:invalid thumbnail": "지원되는 이미지 파일을 선택해주세요.",
 
     "settings:gui compact": "UI 간소화",
     "settings:gui compact description": "일부 UI의 텍스트와 여백을 줄여 간소화합니다. 표시되지 않는 텍스트는 툴팁에서 확인할 수 있습니다.",
@@ -200,6 +202,8 @@
     "projects:manage:tooltip:back to projects": "프로젝트 목록으로 돌아가기",
     "projects:menuitem:change launch options": "실행 옵션 변경",
     "projects:menuitem:copy project": "프로젝트 복사본 생성",
+    "projects:menuitem:set thumbnail": "썸네일 설정",
+    "projects:menuitem:remove thumbnail": "썸네일 삭제",
     "projects:menuitem:backup": "백업 생성",
     "projects:menuitem:forget unity path": "어떤 Unity로 프로젝트를 열지 선택하기 위해<br>저장된 선택을 초기화합니다.",
     "projects:manage:project location": "위치: <path>{{path}}</path>",

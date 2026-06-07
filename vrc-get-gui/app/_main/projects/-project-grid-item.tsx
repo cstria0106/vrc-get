@@ -8,6 +8,10 @@ import {
 	TooltipTriggerIfValid,
 	useSetProjectFavoriteMutation,
 } from "@/app/_main/projects/-project-row";
+import {
+	ProjectThumbnail,
+	useProjectThumbnailMutation,
+} from "@/app/_main/projects/-project-thumbnail";
 import { copyProject } from "@/app/_main/projects/manage/-copy-project";
 import { BackupProjectDialog } from "@/components/BackupProjectDialog";
 import { FavoriteStarToggleButton } from "@/components/FavoriteStarButton";
@@ -42,6 +46,7 @@ export function ProjectGridItem({
 	loading?: boolean;
 }) {
 	const setProjectFavorite = useSetProjectFavoriteMutation();
+	const projectThumbnailMutation = useProjectThumbnailMutation();
 
 	const typeIconClass = "w-5 h-5";
 
@@ -55,7 +60,7 @@ export function ProjectGridItem({
 		<ProjectContext.Provider
 			value={{ removed, is_valid, loading: Boolean(loading) }}
 		>
-			<Card className="relative p-4 bg-card flex flex-col gap-2 group compact:p-2 compact:pl-3 compact:gap-1">
+			<Card className="relative p-4 bg-card flex flex-col gap-3 group compact:p-2 compact:gap-2 sm:flex-row">
 				<div className={"absolute top-2 right-2 gap-2 flex"}>
 					<div className="relative content-center">
 						<FavoriteStarToggleButton
@@ -99,6 +104,33 @@ export function ProjectGridItem({
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								onClick={() =>
+									projectThumbnailMutation.mutate({
+										projectPath: project.path,
+										action: "set",
+									})
+								}
+								disabled={!project.is_exists || !project.is_valid || loading}
+							>
+								{tc("projects:menuitem:set thumbnail")}
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() =>
+									projectThumbnailMutation.mutate({
+										projectPath: project.path,
+										action: "remove",
+									})
+								}
+								disabled={
+									!project.is_exists ||
+									!project.is_valid ||
+									loading ||
+									project.thumbnail_path == null
+								}
+							>
+								{tc("projects:menuitem:remove thumbnail")}
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() =>
 									openSingleDialog(RemoveProjectDialog, { project })
 								}
 								disabled={loading}
@@ -110,98 +142,106 @@ export function ProjectGridItem({
 					</DropdownMenu>
 				</div>
 
-				<Tooltip>
-					<TooltipTriggerIfInvalid
-						className={"text-left select-text cursor-auto w-full"}
-					>
-						<div className="flex flex-col">
-							<Tooltip>
-								<TooltipTriggerIfValid
-									className={"text-left select-text cursor-auto w-full"}
-								>
-									<p className="font-normal whitespace-pre overflow-ellipsis overflow-hidden">
-										{project.name}
-									</p>
-									<p className="font-normal opacity-50 text-sm whitespace-pre overflow-ellipsis overflow-hidden compact:hidden">
-										{project.path}
-									</p>
-								</TooltipTriggerIfValid>
-								<TooltipContent>{project.path}</TooltipContent>
-							</Tooltip>
+				<div className="w-full sm:w-40 md:w-44 compact:sm:w-36">
+					<ProjectThumbnail project={project} className="w-full" />
+				</div>
+
+				<div className="flex min-w-0 flex-1 flex-col gap-2">
+					<div className="pr-20">
+						<Tooltip>
+							<TooltipTriggerIfInvalid
+								className={"text-left select-text cursor-auto w-full"}
+							>
+								<div className="flex flex-col">
+									<Tooltip>
+										<TooltipTriggerIfValid
+											className={"text-left select-text cursor-auto w-full"}
+										>
+											<p className="font-normal whitespace-pre overflow-ellipsis overflow-hidden">
+												{project.name}
+											</p>
+											<p className="font-normal opacity-50 text-sm whitespace-pre overflow-ellipsis overflow-hidden compact:hidden">
+												{project.path}
+											</p>
+										</TooltipTriggerIfValid>
+										<TooltipContent>{project.path}</TooltipContent>
+									</Tooltip>
+								</div>
+							</TooltipTriggerIfInvalid>
+							<TooltipPortal>
+								<TooltipContent>
+									{removed
+										? tc("projects:tooltip:no directory")
+										: tc("projects:tooltip:invalid project")}
+								</TooltipContent>
+							</TooltipPortal>
+						</Tooltip>
+					</div>
+
+					<div className="flex flex-row gap-2">
+						<div className="flex items-center">
+							{projectTypeKind === "avatars" ? (
+								<CircleUserRound className={typeIconClass} />
+							) : projectTypeKind === "worlds" ? (
+								<Globe className={typeIconClass} />
+							) : (
+								<CircleHelp className={typeIconClass} />
+							)}
 						</div>
-					</TooltipTriggerIfInvalid>
-					<TooltipPortal>
-						<TooltipContent>
-							{removed
-								? tc("projects:tooltip:no directory")
-								: tc("projects:tooltip:invalid project")}
-						</TooltipContent>
-					</TooltipPortal>
-				</Tooltip>
+						<div className="flex flex-col justify-center">
+							<p className="font-normal">{displayType}</p>
+							{isLegacy && (
+								<p className="font-normal opacity-50 dark:opacity-80 text-sm text-destructive">
+									{tc("projects:type:legacy")}
+								</p>
+							)}
+						</div>
 
-				<div className="flex flex-row gap-2">
-					<div className="flex items-center">
-						{projectTypeKind === "avatars" ? (
-							<CircleUserRound className={typeIconClass} />
-						) : projectTypeKind === "worlds" ? (
-							<Globe className={typeIconClass} />
-						) : (
-							<CircleHelp className={typeIconClass} />
-						)}
-					</div>
-					<div className="flex flex-col justify-center">
-						<p className="font-normal">{displayType}</p>
-						{isLegacy && (
-							<p className="font-normal opacity-50 dark:opacity-80 text-sm text-destructive">
-								{tc("projects:type:legacy")}
-							</p>
-						)}
+						<p className="text-sm flex flex-col justify-center">·</p>
+
+						<div className="flex flex-col justify-center">
+							<p className={"text-sm"}>{project.unity}</p>
+						</div>
 					</div>
 
-					<p className="text-sm flex flex-col justify-center">·</p>
-
-					<div className="flex flex-col justify-center">
-						<p className={"text-sm"}>{project.unity}</p>
-					</div>
-				</div>
-
-				<div className="text-xs text-muted-foreground">
-					{tc("general:last modified")}:{" "}
-					<Tooltip>
-						<TooltipTrigger>
-							<time dateTime={lastModified.toISOString()}>
-								<time className="font-normal">
-									{formatDateOffset(project.last_modified)}
+					<div className="text-xs text-muted-foreground">
+						{tc("general:last modified")}:{" "}
+						<Tooltip>
+							<TooltipTrigger>
+								<time dateTime={lastModified.toISOString()}>
+									<time className="font-normal">
+										{formatDateOffset(project.last_modified)}
+									</time>
 								</time>
-							</time>
-						</TooltipTrigger>
-						<TooltipPortal>
-							<TooltipContent>
-								{dateToString(project.last_modified)}
-							</TooltipContent>
-						</TooltipPortal>
-					</Tooltip>
-				</div>
+							</TooltipTrigger>
+							<TooltipPortal>
+								<TooltipContent>
+									{dateToString(project.last_modified)}
+								</TooltipContent>
+							</TooltipPortal>
+						</Tooltip>
+					</div>
 
-				<div className="mt-2 flex flex-wrap gap-2 justify-end compact:gap-1">
-					<ButtonDisabledIfInvalid asChild>
-						<OpenUnityButton
-							projectPath={project.path}
-							unityVersion={project.unity}
-							unityRevision={project.unity_revision}
-						/>
-					</ButtonDisabledIfInvalid>
-					<ManageOrMigrateButton project={project} />
-					<ButtonDisabledIfInvalid
-						onClick={() =>
-							openSingleDialog(BackupProjectDialog, {
-								projectPath: project.path,
-							})
-						}
-						variant="success"
-					>
-						{tc("projects:backup")}
-					</ButtonDisabledIfInvalid>
+					<div className="mt-auto flex flex-wrap gap-2 justify-end compact:gap-1">
+						<ButtonDisabledIfInvalid asChild>
+							<OpenUnityButton
+								projectPath={project.path}
+								unityVersion={project.unity}
+								unityRevision={project.unity_revision}
+							/>
+						</ButtonDisabledIfInvalid>
+						<ManageOrMigrateButton project={project} />
+						<ButtonDisabledIfInvalid
+							onClick={() =>
+								openSingleDialog(BackupProjectDialog, {
+									projectPath: project.path,
+								})
+							}
+							variant="success"
+						>
+							{tc("projects:backup")}
+						</ButtonDisabledIfInvalid>
+					</div>
 				</div>
 			</Card>
 		</ProjectContext.Provider>
