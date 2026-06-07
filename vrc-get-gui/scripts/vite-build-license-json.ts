@@ -466,15 +466,25 @@ async function getLicencesFromPackageLockJson(
 
 		let licenseText: string | null = null;
 		if (!pkg.optional) {
-			// find for LICENSE, LICENSE.txt, or license.md
-			const licensesFile = (await readdir(packagePath)).find(
-				(x) =>
-					x.toLowerCase() === "license" ||
-					x.toLowerCase() === "license.txt" ||
-					x.toLowerCase() === "license.md",
+			const actualPackagePath = await existingPackagePath(
+				rootDir,
+				packagePath,
+				name,
 			);
-			if (licensesFile)
-				licenseText = await readFile(`${packagePath}/${licensesFile}`, "utf-8");
+			if (actualPackagePath != null) {
+				// find for LICENSE, LICENSE.txt, or license.md
+				const licensesFile = (await readdir(actualPackagePath)).find(
+					(x) =>
+						x.toLowerCase() === "license" ||
+						x.toLowerCase() === "license.txt" ||
+						x.toLowerCase() === "license.md",
+				);
+				if (licensesFile)
+					licenseText = await readFile(
+						path.join(actualPackagePath, licensesFile),
+						"utf-8",
+					);
+			}
 		}
 
 		result.push({
@@ -487,6 +497,32 @@ async function getLicencesFromPackageLockJson(
 	}
 
 	return result;
+}
+
+async function existingPackagePath(
+	rootDir: string,
+	packagePath: string,
+	name: string,
+): Promise<string | null> {
+	try {
+		await stat(packagePath);
+		return packagePath;
+	} catch (e) {
+		if (!(e instanceof Error) || !("code" in e) || e.code !== "ENOENT") {
+			throw e;
+		}
+	}
+
+	const hoistedPackagePath = path.join(rootDir, "node_modules", name);
+	try {
+		await stat(hoistedPackagePath);
+		return hoistedPackagePath;
+	} catch (e) {
+		if (!(e instanceof Error) || !("code" in e) || e.code !== "ENOENT") {
+			throw e;
+		}
+		return null;
+	}
 }
 
 function getLicenseNames() {
